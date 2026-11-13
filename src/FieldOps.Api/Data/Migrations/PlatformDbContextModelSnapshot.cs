@@ -70,7 +70,7 @@ namespace FieldOps.Api.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<string>("Phone")
+                    b.Property<string>("PrimaryPhone")
                         .HasMaxLength(32)
                         .HasColumnType("nvarchar(32)");
 
