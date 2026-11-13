@@ -10,31 +10,20 @@ namespace FieldOps.Api.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
+            // Existing rows: every customer's phone number is kept under the new name.
+            migrationBuilder.RenameColumn(
                 name: "Phone",
-                table: "Customers");
-
-            migrationBuilder.AddColumn<string>(
-                name: "PrimaryPhone",
                 table: "Customers",
-                type: "nvarchar(32)",
-                maxLength: 32,
-                nullable: true);
+                newName: "PrimaryPhone");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
+            migrationBuilder.RenameColumn(
                 name: "PrimaryPhone",
-                table: "Customers");
-
-            migrationBuilder.AddColumn<string>(
-                name: "Phone",
                 table: "Customers",
-                type: "nvarchar(32)",
-                maxLength: 32,
-                nullable: true);
+                newName: "Phone");
         }
     }
 }
