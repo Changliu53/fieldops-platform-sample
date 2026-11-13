@@ -38,10 +38,17 @@ repository from a branch of it is reviewed the same way.
 |---|---|---|
 | `work-order-export` | Adds a CSV export of work orders | Turns off the tenant filter, has no authorization policy, writes a file to a fixed path on the server, builds CSV by hand |
 | `rename-customer-phone` | Renames a column | Written as drop then add, so existing phone numbers are deleted. No designer file, and the model snapshot is not updated |
+| `customer-phone-update` | Adds an endpoint to change a customer's phone number | Nothing its author knows of. It follows the platform rules, and is here for the other outcome of a review: reject whatever the first pass raises that you disagree with, and when nothing is left the publish step becomes "Approve: no changes needed" |
 
-Both have been run to the end. The results are public:
+The first two have been run to the end. The results are public:
 [CSV export](https://github.com/Changliu53/fieldops-platform-sample/pull/1) and
 [column rename](https://github.com/Changliu53/fieldops-platform-sample/pull/2).
+`customer-phone-update` has not been through a review yet, so what the first
+pass says about it is not known. It has no `fix/` folder, because there is
+nothing prepared to fix.
+
+After either script the checkout is left on the scenario's branch. Run
+`git checkout main` before starting work of your own.
 
 Each scenario folder has `change/` (the first commit), `fix/` (the author's
 second commit), `title.txt`, and `body.md`. Files are copied over the
