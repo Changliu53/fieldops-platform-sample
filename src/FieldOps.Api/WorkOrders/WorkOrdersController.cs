@@ -58,4 +58,23 @@ public class WorkOrdersController : ControllerBase
         await _db.SaveChangesAsync(ct);
         return NoContent();
     }
+
+    [HttpGet("export")]
+    public async Task<IActionResult> Export([FromQuery] string customer, CancellationToken ct)
+    {
+        var rows = await _db.WorkOrders
+            .IgnoreQueryFilters()
+            .Where(w => w.CustomerName.Contains(customer))
+            .OrderBy(w => w.ScheduledFor)
+            .ToListAsync(ct);
+
+        var csv = "Id,Customer,Description,Scheduled,Total\n";
+        foreach (var row in rows)
+        {
+            csv += row.Id + "," + row.CustomerName + "," + row.Description + "," + row.ScheduledFor + "," + row.QuotedTotal + "\n";
+        }
+
+        System.IO.File.WriteAllText("C:\\exports\\workorders-" + customer + ".csv", csv);
+        return File(System.Text.Encoding.UTF8.GetBytes(csv), "text/csv", "work-orders.csv");
+    }
 }
