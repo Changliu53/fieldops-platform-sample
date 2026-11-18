@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text;
 using FieldOps.Api.Auditing;
 using FieldOps.Api.Data;
 using FieldOps.Api.Data.Entities;
@@ -60,21 +62,38 @@ public class WorkOrdersController : ControllerBase
     }
 
     [HttpGet("export")]
+    [Authorize(Policy = "WorkOrders.Read")]
     public async Task<IActionResult> Export([FromQuery] string customer, CancellationToken ct)
     {
+        // The DbContext's query filter limits this to the current tenant.
+        // An exact match: the file goes to one customer, and "Smith" must
+        // not pull in "Smithson Ltd".
         var rows = await _db.WorkOrders
-            .IgnoreQueryFilters()
-            .Where(w => w.CustomerName.Contains(customer))
+            .Where(w => w.CustomerName == customer)
             .OrderBy(w => w.ScheduledFor)
+            .Take(5000)
             .ToListAsync(ct);
 
-        var csv = "Id,Customer,Description,Scheduled,Total\n";
+        var csv = new StringBuilder("Id,Customer,Description,Scheduled,Total\n");
         foreach (var row in rows)
         {
-            csv += row.Id + "," + row.CustomerName + "," + row.Description + "," + row.ScheduledFor + "," + row.QuotedTotal + "\n";
+            csv.Append(row.Id).Append(',')
+                .Append(Csv(row.CustomerName)).Append(',')
+                .Append(Csv(row.Description)).Append(',')
+                .Append(row.ScheduledFor.ToString("O")).Append(',')
+                .Append(row.QuotedTotal.ToString(CultureInfo.InvariantCulture)).Append('\n');
         }
 
-        System.IO.File.WriteAllText("C:\\exports\\workorders-" + customer + ".csv", csv);
-        return File(System.Text.Encoding.UTF8.GetBytes(csv), "text/csv", "work-orders.csv");
+        return File(Encoding.UTF8.GetBytes(csv.ToString()), "text/csv", "work-orders.csv");
+    }
+
+    /// <summary>
+    /// Quotes a value for CSV. A leading =, +, - or @ is prefixed with a quote
+    /// mark so a spreadsheet does not run it as a formula.
+    /// </summary>
+    private static string Csv(string value)
+    {
+        var safe = value.Length > 0 && "=+-@".Contains(value[0]) ? "'" + value : value;
+        return "\"" + safe.Replace("\"", "\"\"") + "\"";
     }
 }
